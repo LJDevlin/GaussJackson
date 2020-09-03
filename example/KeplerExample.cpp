@@ -11,7 +11,7 @@ The initial coniditions are such that the unit mass follows a circular orbit at 
 */
 
 // Define the differential equation to be integrated
-void ode(const boost::array<double,4> &x, boost::array<double,4> &dxdt, double t){
+void ode(const boost::array<double,4> &x, boost::array<double,4> &dxdt, double time){
 	const double mu = 398600.4415; // Gravitational parameter G*Mass_{Earth} [km^3 s^-2]
 
 	double radius = sqrt(x[0]*x[0]+x[1]*x[1]);
@@ -30,7 +30,7 @@ void ode(const boost::array<double,4> &x, boost::array<double,4> &dxdt, double t
 
 int main()
 {	
-	// Defined the initial conditions which is at a radius of 10,000 km, initial velocity is calculated by sqrt(mu/radius)
+	// Define the initial conditions which is at a radius of 10,000 km, initial velocity is calculated by sqrt(mu/radius)
 	boost::array<double,4> state = {{10000.0,0.0,0.0,6.313481143553056}};
 	
 	// Run GaussJackson for 24 hours with a time-step of 60 seconds. Output is requested and saved to 'output.csv' but only saved for every 600 seconds

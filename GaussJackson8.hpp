@@ -19,7 +19,8 @@
     an RKF78 method in the ODEINT library. Based on the previous 8 points the
     next point is estimated, if the step is accepted then the state is updated, if
     not it is iterated again until it is within tolerence. 9 values of the y,
-    y' and y'' are stored internally.
+    y' and y'' are stored internally and shifted to make room for a new value while
+    keeping the array at a constant size.
 
 */
 
