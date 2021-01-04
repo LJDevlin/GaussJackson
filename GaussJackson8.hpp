@@ -36,7 +36,7 @@ namespace GJ8{
     const double tolerance = 1e-9; // Tolerance which must be met to allow next value to be calculated
     const int maxIterations = 400; // Maximum number of iterations in start-up and in predictor/corrector
     const std::string outputFileName = "output.csv"; 
-    const int outputPrecision=10; 
+    const int outputPrecision=16; 
     const int sizeOfMultiStepArray=9;
 
 
@@ -407,6 +407,7 @@ namespace GJ8{
             }
         
         } // close while loop
+        return true;
     }
 
 
