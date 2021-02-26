@@ -16,7 +16,7 @@
     iii) A corrector (Adams-Moulton)
 
     The start-up procedure populates 4 steps either side of the base epoch using
-    an RKF78 method in the ODEINT library. Based on the previous 8 points the
+    an RKF78 method from the ODEINT library. Based on the previous 8 points the
     next point is estimated, if the step is accepted then the state is updated, if
     not it is iterated again until it is within tolerence. 9 values of the y,
     y' and y'' are stored internally and shifted to make room for a new value while
@@ -320,6 +320,7 @@ namespace GJ8{
         }
     }
 
+    // Update the output file
     void updateOutput(std::ofstream& outputFile, double* y, double* dydt, double time, int dimension) 
     {
         if(outputFile.is_open()){
@@ -348,6 +349,8 @@ namespace GJ8{
 
     }
 
+    // Before the predictor corrector is run it is necessary to generate 4 points either side of epoch
+    // If start-up is unable to converge it will return false and programme will end.
     template <size_t stateDimension, size_t dimension>
     bool startupProcedure(boost::array<double,stateDimension> &state, double T0,void (*ODE)(const boost::array< double, stateDimension> &, boost::array< double , stateDimension> &, double),
                             boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &y, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &dydt,
@@ -355,12 +358,12 @@ namespace GJ8{
                             boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &Sn, double h)
     {
         boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> predictedY;
-        boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> predictedDydt; 
-               
+        boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> predictedDydt;          
         boost::array<double, stateDimension> derivatives;
         int iteration = 0;
         double h2 = h * h;
         
+        // Calculate the initial derivatives at epoch 
         ODE(state,derivatives,T0);
 
         // Get initial y, y' and y''
@@ -410,30 +413,29 @@ namespace GJ8{
         return true;
     }
 
-
+    // Main part of the method
     template <size_t stateDimension, size_t dimension>
     void predictorCorrector(void (*ODE)(const boost::array< double, stateDimension> &, boost::array< double, stateDimension> &, double),
             boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &y, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &dydt, 
             boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &f, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &sn,
             boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &Sn, double &time, double h, int numberOfSteps, bool output, double outputTime,
             std::ofstream& outputFile){
-        
+       
+        boost::array<double,stateDimension> state;
+        boost::array<double, stateDimension> derivatives;
         int iteration;
         double h2 = h * h;
         int outputStep = round(outputTime/h);
 
-        boost::array<double,stateDimension> state;
-        boost::array<double, stateDimension> derivatives;
-
         // update output from start-up is necessary and get time to the correct value
-        for(int i = 4; i<sizeOfMultiStepArray; i++){
-            
+        for(int i = 4; i<sizeOfMultiStepArray; i++){            
             if(output && (i-4)%outputStep==0 ){
                 updateOutput(outputFile, &y[0][i], &dydt[0][i], time, dimension);
             }      
-            time+=h;
+            time+=h; // increment time to the 5th h step
         }
 
+        // Main loop
         for (int i = 9; i < numberOfSteps+4; i++) { //main predictor corrector for loop start
             // Caclculate sum term of previous y'' values with last row of GJ coefficients for predictor
             boost::array<double, dimension> aCoeffSumTerm5;
@@ -553,7 +555,7 @@ namespace GJ8{
             // Update state with last calculated values for y and y'
             updateState(state, y, dydt);
 
-        }
+        } 
 
         return;
     
