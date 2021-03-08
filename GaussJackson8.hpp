@@ -39,9 +39,11 @@ namespace GJ8{
     const int outputPrecision=16; 
     const int sizeOfMultiStepArray=9;
 
+    typedef boost::array<boost::array<double, sizeOfMultiStepArray>, sizeOfMultiStepArray+1> Coeff_array; 
+    typedef boost::array<double, sizeOfMultiStepArray> GJ8_array;
 
     // Constants for integration
-    boost::array<boost::array<double, sizeOfMultiStepArray>, sizeOfMultiStepArray+1> GJ8_a_coeff  =
+    Coeff_array GJ8_a_coeff  =
     {{{
       3250433.0 / 53222400.0,    572741.0 /  5702400.0,    -8701681.0 /  39916800.0,
       4026311.0 / 13305600.0,   -917039.0 /  3193344.0,     7370669.0 /  39916800.0,
@@ -84,7 +86,7 @@ namespace GJ8{
       18071351.0 /   3326400.0, -24115843.0 /  9979200.0,  103798439.0 / 159667200.0
     }}};
 
-    boost::array<boost::array<double, sizeOfMultiStepArray>, sizeOfMultiStepArray+1> GJ8_b_coeff  =
+    Coeff_array GJ8_b_coeff  =
     {{{
         19087.0 /     89600.0,   -427487.0 /   725760.0,    3498217.0 /   3628800.0,
         -500327.0 /    403200.0,      6467.0 /     5670.0,   -2616161.0 /   3628800.0,
@@ -129,8 +131,8 @@ namespace GJ8{
 
 
     template <size_t dimension>
-    void calculate_sn_backwards(boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &sn, boost::array<boost::array<double, sizeOfMultiStepArray>,
-                 dimension> &f, int startStep, int endStep){
+    void calculate_sn_backwards(boost::array<GJ8_array, dimension> &sn, boost::array<GJ8_array, dimension> &f, int startStep, int endStep)
+    {
         for(int i = startStep; i > endStep-1;i--){
             for(int j=0;j<dimension;j++){
                 sn[j][i]=sn[j][i+1]-(f[j][i+1]+f[j][i])/2;
@@ -140,8 +142,8 @@ namespace GJ8{
 
 
     template <size_t dimension>
-    void calculate_sn_forwards(boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &sn, boost::array<boost::array<double, sizeOfMultiStepArray>,
-                 dimension> &f, int startStep, int endStep){
+    void calculate_sn_forwards(boost::array<GJ8_array, dimension> &sn, boost::array<GJ8_array, dimension> &f, int startStep, int endStep)
+    {
         for(int i = startStep; i < endStep;i++){
             for(int j=0;j<dimension;j++){
                 sn[j][i+1]=sn[j][i]+(f[j][i]+f[j][i+1])/2;
@@ -150,8 +152,8 @@ namespace GJ8{
     }
 
     template <size_t dimension>
-    void calculate_Sn_backwards(boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &Sn, boost::array<boost::array<double, sizeOfMultiStepArray>,
-                dimension> &sn, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &f, int startStep, int endStep){
+    void calculate_Sn_backwards(boost::array<GJ8_array, dimension> &Sn, boost::array<GJ8_array, dimension> &sn, boost::array<GJ8_array, dimension> &f, int startStep, int endStep)
+    {
         for(int i = startStep; i > endStep-1;i--){
             for(int j=0;j<dimension;j++){
                 Sn[j][i] = Sn[j][i+1] - sn[j][i+1] + f[j][i+1] / 2;
@@ -161,8 +163,8 @@ namespace GJ8{
 
 
     template <size_t dimension>
-    void calculate_Sn_forwards(boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &Sn, boost::array<boost::array<double, sizeOfMultiStepArray>,
-                dimension> &sn, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &f, int startStep, int endStep){
+    void calculate_Sn_forwards(boost::array<GJ8_array, dimension> &Sn, boost::array<GJ8_array, dimension> &sn, boost::array<GJ8_array, dimension> &f, int startStep, int endStep)
+    {
         for(int i = startStep; i < endStep;i++){
             for(int j=0;j<dimension;j++){
                 Sn[j][i+1] = Sn[j][i] + sn[j][i] + f[j][i] / 2;
@@ -172,8 +174,7 @@ namespace GJ8{
 
     // Calculates /sum^{4}_{-4} coeff*rdotdot
     template <size_t dimension>
-    void calculateCoefficientSum(boost::array<double, dimension> &coefficientSum, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &f, 
-                boost::array<boost::array<double, sizeOfMultiStepArray>, sizeOfMultiStepArray+1> &coeff, int row)
+    void calculateCoefficientSum(boost::array<double, dimension> &coefficientSum, boost::array<GJ8_array, dimension> &f,  Coeff_array &coeff, int row)
     {
         double sum;
         for (int j = 0; j < dimension; j++){
@@ -186,9 +187,8 @@ namespace GJ8{
     }
 
     template <size_t dimension, size_t arraySize>
-    void updateStartupPrediction(boost::array<boost::array<double, arraySize>, dimension> &prediction, boost::array<boost::array<double, sizeOfMultiStepArray>,dimension> &f,
-                boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &sArray, boost::array<boost::array<double, sizeOfMultiStepArray>, sizeOfMultiStepArray+1> &coeff,
-                int arrayStart, double timeParameter)
+    void updateStartupPrediction(boost::array<boost::array<double, arraySize>, dimension> &prediction, boost::array<GJ8_array,dimension> &f, boost::array<GJ8_array, dimension> &sArray,
+        Coeff_array &coeff, int arrayStart, double timeParameter)
     {
         double sum;
         for (int i = arrayStart; i < sizeOfMultiStepArray; i++) {
@@ -203,8 +203,7 @@ namespace GJ8{
     }
         
     template <size_t dimension>
-    void calculateCentralSvalue(boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &sArray,  boost::array<boost::array<double, sizeOfMultiStepArray>,dimension> &y,
-     boost::array<boost::array<double, sizeOfMultiStepArray>,dimension> &f, boost::array<boost::array<double, sizeOfMultiStepArray>, sizeOfMultiStepArray+1> &coeff, double timeParameter)
+    void calculateCentralSvalue(boost::array<GJ8_array, dimension> &sArray,  boost::array<GJ8_array,dimension> &y, boost::array<GJ8_array,dimension> &f, Coeff_array &coeff, double timeParameter)
     {
         for (int i = 0; i < dimension; i++) {
             double sum = 0;
@@ -217,10 +216,8 @@ namespace GJ8{
 
     // Initiates start-up procedure using odeint stepper do_step method
     template <size_t stateDimension, size_t dimension>
-    void populateStartupValues(void (*ODE)(const boost::array<double, stateDimension> &, boost::array<double, stateDimension > &, double),
-                                boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &y, boost::array<boost::array<double, sizeOfMultiStepArray>,
-                                dimension> &dydt, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &f, boost::array<double, stateDimension> &state,
-                                double initialTime, double h, int step)
+    void populateStartupValues(void (*ODE)(const boost::array<double, stateDimension> &, boost::array<double, stateDimension > &, double), boost::array<GJ8_array, dimension> &y, boost::array<GJ8_array,
+                                dimension> &dydt, boost::array<GJ8_array, dimension> &f, boost::array<double, stateDimension> &state, double initialTime, double h, int step)
     {
         boost::numeric::odeint::runge_kutta_fehlberg78< boost::array< double , stateDimension > > stepper;
         boost::array<double, stateDimension> derivatives;
@@ -246,8 +243,7 @@ namespace GJ8{
 
     template <size_t stateDimension, size_t dimension>
     bool checkStartupConvergence(void (*ODE)(const boost::array<double, stateDimension> &, boost::array<double, stateDimension > &, double),  boost::array<double, stateDimension> &state,
-                                boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &y, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &dydt,
-                                boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &f, double h)
+                                boost::array<GJ8_array, dimension> &y, boost::array<GJ8_array, dimension> &dydt, boost::array<GJ8_array, dimension> &f, double h)
     {
                 // 3) (b) v: Evaluate the updated acceleration
                 double time = -4*h;
@@ -272,8 +268,7 @@ namespace GJ8{
     }
 
     template <size_t dimension>
-    bool checkCorrectorConvergence(boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &y, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &dydt,
-                                    boost::array<double, dimension> &predictedY, boost::array<double, dimension> &predictedDydt)
+    bool checkCorrectorConvergence(boost::array<GJ8_array, dimension> &y, boost::array<GJ8_array, dimension> &dydt, boost::array<double, dimension> &predictedY, boost::array<double, dimension> &predictedDydt)
     {
         // calculate difference between previous value and predicted value
         boost::array<boost::array<double, 2>, dimension> RelativeError;
@@ -301,7 +296,7 @@ namespace GJ8{
 
     // Shifts all elements in passed array to the left. 
     template <size_t dimension>
-    void shiftArray(boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &state){
+    void shiftArray(boost::array<GJ8_array, dimension> &state){
         for (int i = 1; i < sizeOfMultiStepArray; i++) {
             for (int j = 0; j < dimension; j++) {
                 state[j][i - 1] = state[j][i];
@@ -311,8 +306,7 @@ namespace GJ8{
 
     // Update state vector with values of y & y'
     template<size_t stateDimension, size_t dimension>
-    void updateState(boost::array<double, stateDimension> &state, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &y, boost::array<boost::array<double, sizeOfMultiStepArray>,
-                     dimension> &dydt)
+    void updateState(boost::array<double, stateDimension> &state, boost::array<GJ8_array, dimension> &y, boost::array<GJ8_array, dimension> &dydt)
     {
         for(int i=0; i < dimension; i++){
             state[i]=y[i][sizeOfMultiStepArray-1];
@@ -353,12 +347,11 @@ namespace GJ8{
     // If start-up is unable to converge it will return false and programme will end.
     template <size_t stateDimension, size_t dimension>
     bool startupProcedure(boost::array<double,stateDimension> &state, double T0,void (*ODE)(const boost::array< double, stateDimension> &, boost::array< double , stateDimension> &, double),
-                            boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &y, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &dydt,
-                            boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &f, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &sn,
-                            boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &Sn, double h)
+                            boost::array<GJ8_array, dimension> &y, boost::array<GJ8_array, dimension> &dydt, boost::array<GJ8_array, dimension> &f, boost::array<GJ8_array, dimension> &sn,
+                            boost::array<GJ8_array, dimension> &Sn, double h)
     {
-        boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> predictedY;
-        boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> predictedDydt;          
+        boost::array<GJ8_array, dimension> predictedY;
+        boost::array<GJ8_array, dimension> predictedDydt;          
         boost::array<double, stateDimension> derivatives;
         int iteration = 0;
         double h2 = h * h;
@@ -415,12 +408,10 @@ namespace GJ8{
 
     // Main part of the method
     template <size_t stateDimension, size_t dimension>
-    void predictorCorrector(void (*ODE)(const boost::array< double, stateDimension> &, boost::array< double, stateDimension> &, double),
-            boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &y, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &dydt, 
-            boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &f, boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &sn,
-            boost::array<boost::array<double, sizeOfMultiStepArray>, dimension> &Sn, double &time, double h, int numberOfSteps, bool output, double outputTime,
-            std::ofstream& outputFile){
-       
+    void predictorCorrector(void (*ODE)(const boost::array< double, stateDimension> &, boost::array< double, stateDimension> &, double), boost::array<GJ8_array, dimension> &y, boost::array<GJ8_array, dimension> &dydt, 
+            boost::array<GJ8_array, dimension> &f, boost::array<GJ8_array, dimension> &sn, boost::array<GJ8_array, dimension> &Sn, double &time, double h, int numberOfSteps, bool output, double outputTime,
+            std::ofstream& outputFile)
+        {
         boost::array<double,stateDimension> state;
         boost::array<double, stateDimension> derivatives;
         int iteration;
@@ -541,11 +532,11 @@ namespace GJ8{
         const int numberOfSteps = (int)((timeEnd-timeStart) / h)+1;
 
         // Define arrays common to both start-up and predicictor corrector
-        boost::array<boost::array<double, sizeOfMultiStepArray>, stateDimension/2> y;    // y
-        boost::array<boost::array<double, sizeOfMultiStepArray>, stateDimension/2> dydt; // y'
-        boost::array<boost::array<double, sizeOfMultiStepArray>, stateDimension/2> f;    // y''
-        boost::array<boost::array<double, sizeOfMultiStepArray>, stateDimension/2> sn;
-        boost::array<boost::array<double, sizeOfMultiStepArray>, stateDimension/2> Sn;
+        boost::array<GJ8_array, stateDimension/2> y;    // y
+        boost::array<GJ8_array, stateDimension/2> dydt; // y'
+        boost::array<GJ8_array, stateDimension/2> f;    // y''
+        boost::array<GJ8_array, stateDimension/2> sn;
+        boost::array<GJ8_array, stateDimension/2> Sn;
 
         // Main calculation, if start-up succesfull then proceed with predictor-corrector. 
         if(startupProcedure(state, timeStart, ODE, y,dydt, f, sn, Sn, h)){
