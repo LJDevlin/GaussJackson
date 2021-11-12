@@ -35,7 +35,7 @@ int main()
 	
 	// Run GaussJackson for 24 hours with a time-step of 60 seconds. Output is requested and saved to 'output.csv' but only saved for every 600 seconds
 	// state is updated once propagate has returned.
-	GJ8::propagate(state, ode, 0.0, 60*60*24, 60, 1, 60);
+	GJ8::propagate(state, ode, 0.0, 60*60*24, 60, 1, 600);
 
 	return 0;
 }

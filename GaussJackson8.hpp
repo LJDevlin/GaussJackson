@@ -286,6 +286,7 @@ namespace GJ8{
             }
         }
 
+        // Update last state with predicted value
         for(int i = 0; i < dimension; i++){
             y[i][8]=predictedY[i];
             dydt[i][8]=predictedDydt[i] ;
@@ -471,6 +472,7 @@ namespace GJ8{
             while (iteration < maxIterations) {
                 iteration++;
 
+                // return if corrector is ran too much for an iteration
                 if (iteration == maxIterations) {
                     std::cout << "Error: Maximum number of iterations reached, tolerance may be too strict, state not updated, exiting"<< std::endl;
                     if(output){
