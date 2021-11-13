@@ -249,13 +249,12 @@ namespace GJ8{
     template <size_t stateDimension, size_t dimension>
     void populateStartupValues(void (*ODE)(const boost::array<double, stateDimension> &, boost::array<double, stateDimension > &, double), 
                                 boost::array<GJ8_array, dimension> &y, boost::array<GJ8_array,dimension> &dydt, boost::array<GJ8_array, dimension> &f,
-                                boost::array<double, stateDimension> &state, double initialTime, double h, int step)
+                                boost::array<double, stateDimension> &state, double time, double h, int step)
     {
         boost::numeric::odeint::runge_kutta_fehlberg78< boost::array< double , stateDimension > > stepper;
         boost::array<double, stateDimension> derivatives;
         boost::array<double,stateDimension> startupState=state;
 
-        double time=initialTime;
         int i = 4;
         do{
             stepper.do_step(ODE, startupState, time, h);
